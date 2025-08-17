@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
-import { Mic, Video, Brain, BarChart3, FileText, Download, Play, Sparkles } from "lucide-react"
+import { Mic, Video, Brain, BarChart3, FileText, Download, Play, Sparkles, ChevronRight } from "lucide-react"
 import { AIService } from "@/lib/ai-service"
 
 interface StudioOutput {
@@ -21,9 +21,10 @@ interface StudioOutput {
 
 interface AIStudioProps {
   sources?: any[]
+  onCollapse?: () => void
 }
 
-export function AIStudio({ sources = [] }: AIStudioProps) {
+export function AIStudio({ sources = [], onCollapse }: AIStudioProps) {
   const [outputs, setOutputs] = useState<StudioOutput[]>([])
   const [isGenerating, setIsGenerating] = useState<string | null>(null)
   const aiService = new AIService()
@@ -170,7 +171,14 @@ export function AIStudio({ sources = [] }: AIStudioProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-sidebar-border">
-        <h2 className="font-semibold text-sidebar-foreground mb-4">Studio</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-sidebar-foreground">Studio</h2>
+          {onCollapse && (
+            <Button variant="ghost" size="icon" onClick={onCollapse} aria-label="Collapse studio panel">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <Button
