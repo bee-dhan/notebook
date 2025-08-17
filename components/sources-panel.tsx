@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, FileText, Globe, ExternalLink, Video, Music, MoreHorizontal } from "lucide-react"
+import { Plus, Search, FileText, Globe, ExternalLink, Video, Music, MoreHorizontal, ChevronLeft } from "lucide-react"
 import { SourceUpload } from "./source-upload"
 import type { ProcessedSource } from "@/lib/source-processor"
 
@@ -14,9 +14,10 @@ interface SourcesPanelProps {
   sources: ProcessedSource[]
   onSourceAdd: (source: ProcessedSource) => void
   onSourceClick: (sourceId: string) => void
+  onCollapse?: () => void
 }
 
-export function SourcesPanel({ sources, onSourceAdd, onSourceClick }: SourcesPanelProps) {
+export function SourcesPanel({ sources, onSourceAdd, onSourceClick, onCollapse }: SourcesPanelProps) {
   const [showAddSource, setShowAddSource] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
@@ -72,7 +73,14 @@ export function SourcesPanel({ sources, onSourceAdd, onSourceClick }: SourcesPan
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-sidebar-border">
-        <h2 className="font-semibold text-sidebar-foreground mb-3">Sources</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-sidebar-foreground">Sources</h2>
+          {onCollapse && (
+            <Button variant="ghost" size="icon" onClick={onCollapse} aria-label="Collapse sources panel">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <div className="flex gap-2 mb-3">
           <Button size="sm" className="flex-1" onClick={() => setShowAddSource(true)}>
             <Plus className="h-4 w-4 mr-2" />

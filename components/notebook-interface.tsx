@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Settings, Share, MoreHorizontal, Brain } from "lucide-react"
+import { Settings, Share, MoreHorizontal, Brain, Maximize2, Minimize2 } from "lucide-react"
 import { AIChat } from "./ai-chat"
 import { AIStudio } from "./ai-studio"
 import { SourcesPanel } from "./sources-panel"
@@ -11,6 +11,7 @@ import { SharingDialog } from "./sharing-dialog"
 import { CollaborationBar } from "./collaboration-bar"
 import { collaborationService, type Collaborator } from "@/lib/collaboration"
 import type { ProcessedSource } from "@/lib/source-processor"
+import { PanelGroup, Panel, PanelResizeHandle, type ImperativePanelHandle } from "react-resizable-panels"
 
 export function NotebookInterface() {
   const [sources, setSources] = useState<ProcessedSource[]>([])
@@ -19,6 +20,10 @@ export function NotebookInterface() {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([])
   const [comments, setComments] = useState(collaborationService.getComments())
   const [activities, setActivities] = useState(collaborationService.getActivities())
+  const [isChatFullscreen, setIsChatFullscreen] = useState(false)
+
+  const leftPanelRef = useRef<ImperativePanelHandle | null>(null)
+  const rightPanelRef = useRef<ImperativePanelHandle | null>(null)
 
   useEffect(() => {
     // Simulate current user and some collaborators
@@ -156,24 +161,51 @@ export function NotebookInterface() {
 
       {/* Main Content */}
       <div className="flex-1 flex">
-        {/* Sources Panel */}
-        <div className="w-80 border-r border-border bg-sidebar">
-          <SourcesPanel sources={sources} onSourceAdd={handleSourceAdd} onSourceClick={handleSourceClick} />
-        </div>
+        <PanelGroup direction="horizontal" className="flex-1">
+          {/* Sources Panel */}
+          <Panel ref={leftPanelRef} defaultSize={20} minSize={12} collapsible collapsedSize={0}>
+            <div className="h-full border-r border-border bg-sidebar">
+              <SourcesPanel
+                sources={sources}
+                onSourceAdd={handleSourceAdd}
+                onSourceClick={handleSourceClick}
+                onCollapse={() => leftPanelRef.current?.collapse?.()}
+              />
+            </div>
+          </Panel>
 
-        {/* Chat Panel */}
-        <div className="flex-1 flex flex-col">
-          <div className="p-4 border-b border-border">
-            <h2 className="font-semibold">Chat</h2>
-          </div>
+          <PanelResizeHandle className="w-1 bg-border hover:bg-accent transition-colors cursor-col-resize" />
 
-          <AIChat sources={sources} onSourceClick={handleSourceClick} />
-        </div>
+          {/* Chat Panel */}
+          <Panel defaultSize={60} minSize={30}>
+            <div className="flex-1 flex flex-col h-full">
+              <div className={isChatFullscreen ? "fixed inset-0 z-50 bg-background flex flex-col" : "flex-1 flex flex-col"}>
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                  <h2 className="font-semibold">Chat</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsChatFullscreen((v) => !v)}
+                    className="ml-auto"
+                  >
+                    {isChatFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  </Button>
+                </div>
 
-        {/* Studio Panel */}
-        <div className="w-96 border-l border-border bg-sidebar">
-          <AIStudio sources={sources} />
-        </div>
+                <AIChat sources={sources} onSourceClick={handleSourceClick} />
+              </div>
+            </div>
+          </Panel>
+
+          <PanelResizeHandle className="w-1 bg-border hover:bg-accent transition-colors cursor-col-resize" />
+
+          {/* Studio Panel */}
+          <Panel ref={rightPanelRef} defaultSize={20} minSize={12} collapsible collapsedSize={0}>
+            <div className="h-full border-l border-border bg-sidebar">
+              <AIStudio sources={sources} onCollapse={() => rightPanelRef.current?.collapse?.()} />
+            </div>
+          </Panel>
+        </PanelGroup>
       </div>
 
       <CollaborationBar
